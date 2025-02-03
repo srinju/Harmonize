@@ -18,4 +18,14 @@ model User {
   email String @unique
   name String
   password String
+  rooms Room[] 
+}
+
+model Room {
+  id  String @id @default(uuid())
+  name String
+  code String @unique
+  creatorId String
+  creator User @relation( fields: [creatorId] , references: [id]) 
+  created_at DateTime @default(now())
 }
