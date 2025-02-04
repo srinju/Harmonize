@@ -9,7 +9,7 @@ import {z} from "zod";
 
 const prisma = new PrismaClient();
 
-function generateApiKey() : string { //function to generate room code
+function generateRoomCode() : string { //function to generate room code
     return randomBytes(6).toString("hex");
 }
 
@@ -20,6 +20,8 @@ const roomSchema = z.object({
 export async function POST(req : Request){
 
     const session = await getServerSession(authOptions);
+    console.log("session details : " , session);
+    console.log("session id : " , session.user.id);
     if(!session){
         return NextResponse.json({
             message : "you are not authenticated!!"
@@ -32,7 +34,7 @@ export async function POST(req : Request){
 
         const body = await req.json();
         const validatedRoomCred = roomSchema.parse(body);
-        const roomCode = generateApiKey();
+        const roomCode = generateRoomCode();
 
         const newRoom = await prisma.room.create({
             data : {
@@ -56,12 +58,20 @@ export async function POST(req : Request){
 
     } catch(error) {
 
-        console.error("room creation error " , error);
-        return NextResponse.json({
-            message : "there was an error in the api endpoint of the the room creation!"
-        },{
-            status : 500
-        });
+        if (error instanceof Error) {
+            console.error("Room creation error:", error.message);
+        } else {
+            console.error("Unknown error occurred:", error);
+        }
+    
+        // Return a proper JSON response
+        return NextResponse.json(
+            {
+                message: "There was an error in the API endpoint for room creation!",
+                error: error instanceof Error ? error.message : "Unknown error",  // Ensure a proper error message is returned
+            },
+            { status: 500 }
+        );
         
     }
 }
