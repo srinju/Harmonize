@@ -24,8 +24,9 @@ export default  function DashboardPage() {
                 throw new Error("get user rooms request was not ok!");
             }
             const data = await response.json();
-            console.log(data);
-            setRooms(data.rooms || []);
+            console.log(data.userRooms.createdRooms);
+            //console.log(data.userRooms.createdRooms);
+            setRooms(data.userRooms.createdRooms || []);
         }
         getUserRooms();
     },[]);
@@ -79,7 +80,7 @@ export default  function DashboardPage() {
                 <div>
                     {rooms.length > 0 ? (
                         rooms.map(room => (
-                            <div>
+                            <div key={room.id}>
                                 <p>Room name : {room.name} </p>
                                 <p>Room Code : {room.code}</p>
                             </div>

@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -14,18 +8,29 @@ datasource db {
 }
 
 model User {
-  id String @id @default(uuid())
-  email String @unique
-  name String
-  password String
-  rooms Room[] 
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String
+  password  String
+  rooms     UserRoom[]  // Many-to-many relationship with Room
+  createdRooms Room[]   // Rooms created by the user (reverse relation)
 }
 
 model Room {
-  id  String @id @default(uuid())
-  name String
-  code String @unique
-  creatorId String
-  creator User @relation( fields: [creatorId] , references: [id]) 
+  id         String   @id @default(uuid())
+  name       String
+  code       String   @unique
+  creatorId  String
+  creator    User     @relation(fields: [creatorId], references: [id])  // Creator of the room
   created_at DateTime @default(now())
+  users      UserRoom[] // Many-to-many relationship with User
+}
+
+model UserRoom {
+  userId  String
+  roomId  String
+  user    User   @relation(fields: [userId], references: [id])
+  room    Room   @relation(fields: [roomId], references: [id])
+
+  @@id([userId, roomId]) // Composite primary key
 }
