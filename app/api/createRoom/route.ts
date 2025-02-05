@@ -48,10 +48,22 @@ export async function POST(req : Request){
             throw new Error("there was an error while creating the room");
         }
 
+        //add the created user to the newRoom>
+        const addCreatorToRoom = await prisma.userRoom.create({
+            data : {
+                userId : session.user.id,
+                roomId : newRoom.id
+            }
+        });
+
+        if(!addCreatorToRoom){
+            throw new Error("there was an error while adding the creator to their created room!!");
+        }
+
         return NextResponse.json({
             room : newRoom,
             roomCode : roomCode,
-            message : "room created successfully"
+            message : "room created successfully and roomcreator added to the room successfully!"
         },{
             status : 200
         });

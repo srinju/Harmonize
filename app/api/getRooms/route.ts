@@ -17,7 +17,7 @@ export async function GET() {
     try {
 
         
-        const userRooms = await prisma.user.findUnique({
+        const createdRooms = await prisma.user.findUnique({
             where : {
                 id : session.user.id
             },
@@ -27,7 +27,8 @@ export async function GET() {
                 
         });
         
-        /*
+        
+        
         const userRooms = await prisma.user.findUnique({
             where : {
                 id : session.user.id
@@ -41,8 +42,9 @@ export async function GET() {
             }
                 
         });
-        */
-        console.log("userRooms : " , userRooms?.createdRooms);
+        
+        console.log("rooms created by the user : " , createdRooms?.createdRooms);
+        console.log("userRooms : " , userRooms?.rooms);
 
         if(!userRooms){
             return NextResponse.json({
@@ -52,7 +54,8 @@ export async function GET() {
 
         return NextResponse.json({
             message : "user rooms fetched successfully!",
-            userRooms : userRooms
+            userRooms : userRooms.rooms || [],
+            createdRooms : createdRooms || []
         });
 
     } catch(error){

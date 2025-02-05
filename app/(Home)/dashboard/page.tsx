@@ -14,6 +14,7 @@ export default  function DashboardPage() {
     
     const [name , setName] = useState("");
     const [rooms , setRooms] = useState<Room[]>([]);
+    const [inRooms , setInRooms] = useState<Room[]>([]);
     const [roomCode , setRoomCode] = useState("");
 
     //get user rooms >
@@ -25,9 +26,12 @@ export default  function DashboardPage() {
                 throw new Error("get user rooms request was not ok!");
             }
             const data = await response.json();
-            console.log(data.userRooms.createdRooms);
-            //console.log(data.userRooms.createdRooms);
-            setRooms(data.userRooms.createdRooms || []);
+            console.log("created rooms by the user : " ,data.createdRooms.createdRooms);
+            console.log("rooms the user is in : ", data.userRooms);
+
+            setRooms(data.createdRooms.createdRooms || []);
+            const userRooms = data.userRooms.map((ur:any) => ur.room);
+            setInRooms(userRooms);
         }
         getUserRooms();
     },[]);
@@ -45,7 +49,14 @@ export default  function DashboardPage() {
             });
 
             const data = await response.json(); //roomCode and room created data is got
+            //refresh rooms list after creation >
+            const refreshResponse = await fetch("api/getRooms");
+            const refreshData = await refreshResponse.json();
+            setRooms(refreshData.createdRooms.createdRooms || []);
+            setInRooms(refreshData.userRooms.map((ur:any) => ur.room));
             console.log("the response from the room api is  : " , data);
+
+            setName(""); //clear the input too
             
             const roomCode = data.roomCode;
             console.log("room code from the backend is : " , roomCode);
@@ -78,6 +89,9 @@ export default  function DashboardPage() {
           console.error("there was an error joinin the room!!");
         }
     }
+
+    console.log("rooms created by the user state : " , rooms);
+    console.log("in rooms state : " , inRooms);
 
     return (
       <div className="p-6 bg-black text-white rounded-lg shadow-md max-h-screen">
@@ -140,6 +154,23 @@ export default  function DashboardPage() {
               ))
             ) : (
               <p className="text-gray-500">No rooms created yet! (DEV NEEDED)</p>
+            )}
+          </div>
+        </div>
+
+        {/* rooms the user is in  Section */}
+        <div>
+          <h2 className="text-2xl font-semibold mb-4">Rooms you are in : </h2>
+          <div>
+            {inRooms.length > 0 ? (
+              inRooms.map((inRoom) => (
+                <div key={inRoom.id} className="mb-4 p-4 bg-gray-800 rounded-lg shadow-sm">
+                  <p className="text-lg font-medium">Room name: {inRoom.name}</p>
+                  <p className="text-sm text-gray-400">Room Code: {inRoom.code}</p>
+                </div>
+              ))
+            ) : (
+              <p className="text-gray-500">"you are not in any rooms yet!</p>
             )}
           </div>
         </div>
