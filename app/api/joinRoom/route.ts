@@ -10,6 +10,7 @@ import { authOptions } from "@/app/lib/auth";
 import { PrismaClient } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { NextResponse } from 'next/server';
+import { publishMessage } from '@/lib/redis';
 
 const prisma = new PrismaClient();
 
@@ -53,8 +54,10 @@ export async function POST(req : Request){
         //join add the user to the room
 
         const userId = session.user.id;
+        const userName = session.user.name;
         //update room with the user's name>
         //target the many to many relationship userroom to add the user to the room
+        //some shit was there like include : { user : { select :  { id , name , image }}} if dosent work look at it
         const addUser = await prisma.userRoom.create({
             data : {
                 userId : userId,
@@ -65,13 +68,22 @@ export async function POST(req : Request){
         //user has been added to the room
         //notify the members in the room that the user joined (USING PUBLISHER)
 
+        //publish to redis channel >
+        
+        await publishMessage(`room:${roomToJoin.id}` , {
+            type : 'USER_JOINED',
+            user : {
+                id : userId,
+                name : userName
+            }
+        });
+
         return NextResponse.json({
+            addedUser : addUser,
             message : "user was added to the room!!"
         },{
             status : 200
         });
-
-
 
     } catch(error){
 
