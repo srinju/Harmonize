@@ -2,6 +2,14 @@ import { createServer } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { createClient } from "redis";
 
+//for the rooms created by the users the creators are already in the room 
+
+//now >
+//other users with the code will now have to check the code
+//if code is same as that of the room to be joining 
+//then add the user to the room (update db)
+//if not then return as wrong code
+
 const server = createServer();
 const wss = new WebSocketServer({server});
 
