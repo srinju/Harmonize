@@ -7,7 +7,7 @@ type Room = {
     name: string;
     code: string;
     creatorId: string;
-    created_at: string;  // Assuming it's a string from the backend (Date can be formatted as string)
+    created_at: string; 
 }
 
 export default  function DashboardPage() {
@@ -35,7 +35,7 @@ export default  function DashboardPage() {
 
         try {
 
-            const response = await fetch("/api/room" , {
+            const response = await fetch("/api/createRoom" , {
                 method : 'POST',
                 headers : {
                     "Content-Type" : "application/json",
