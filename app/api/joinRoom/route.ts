@@ -15,7 +15,7 @@ import { publishMessage } from '@/lib/redis';
 const prisma = new PrismaClient();
 
 const roomCodeSchema = z.object({
-    code : z.string().min(6,"code should be atleast 6 charecters long").nonempty("code is required to join the room!")
+    roomCode : z.string().min(6,"code should be atleast 6 charecters long").nonempty("code is required to join the room!")
 });
     
 export async function POST(req : Request){
@@ -37,7 +37,7 @@ export async function POST(req : Request){
 
         const roomToJoin = await prisma.room.findUnique({
             where : {
-                code : body
+                code : parsedBody.roomCode
             }
         });
 
@@ -70,7 +70,7 @@ export async function POST(req : Request){
 
         //publish to redis channel >
         
-        await publishMessage(`room:${roomToJoin.id}` , {
+        await publishMessage(`room:${roomToJoin.id}` , { //publish the message that the user joined to the room with the room id that the user joined 
             type : 'USER_JOINED',
             user : {
                 id : userId,

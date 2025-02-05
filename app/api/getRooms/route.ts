@@ -16,6 +16,7 @@ export async function GET() {
 
     try {
 
+        
         const userRooms = await prisma.user.findUnique({
             where : {
                 id : session.user.id
@@ -25,7 +26,22 @@ export async function GET() {
             }
                 
         });
-
+        
+        /*
+        const userRooms = await prisma.user.findUnique({
+            where : {
+                id : session.user.id
+            },
+            include : {
+                rooms : {
+                    include : {
+                        room : true
+                    }
+                }
+            }
+                
+        });
+        */
         console.log("userRooms : " , userRooms?.createdRooms);
 
         if(!userRooms){
