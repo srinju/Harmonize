@@ -79,6 +79,10 @@ export async function POST(req : Request){
             },
         });
 
+        //a published message to the pub sub is gone from this primary backend 
+        //and the websocket server will listen to any subscribed messages of types
+        
+
         return NextResponse.json({
             addedUser : addUser,
             message : "user was added to the room!!"
