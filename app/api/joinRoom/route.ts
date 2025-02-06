@@ -58,6 +58,7 @@ export async function POST(req : Request){
         //update room with the user's name>
         //target the many to many relationship userroom to add the user to the room
         //some shit was there like include : { user : { select :  { id , name , image }}} if dosent work look at it
+        
         const addUser = await prisma.userRoom.create({
             data : {
                 userId : userId,
@@ -70,12 +71,12 @@ export async function POST(req : Request){
 
         //publish to redis channel >
         
-        await publishMessage(`room:${roomToJoin.id}` , { //publish the message that the user joined to the room with the room id that the user joined 
+        await publishMessage(`room:${roomToJoin.id}` , {
             type : 'USER_JOINED',
             user : {
                 id : userId,
                 name : userName
-            }
+            },
         });
 
         return NextResponse.json({
