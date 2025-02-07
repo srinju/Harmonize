@@ -28,24 +28,34 @@ app.get('/' , (req,res) => {
 
 //subscribe to the redis client when the server starts
 
-(async () => {
-    
-    try{
-        //create ther subscriber redis client
-        const subscriber = await createSubscriber();
-        //subscribe to all the rooms in the channel>
-        await subscriber.pSubscribe('room:*' , (message , channel) => {
-            const roomId = channel.split(':')[1];
-            //parse the message >
-            const parsedMessage = JSON.parse(message);
-            //forward the message to all the users connected to the room
-            io.to(roomId).emit('room-event' , parsedMessage );
-        });
-    } catch(error){
-        console.error("an error occured connecting the redis pub sub!!" , error);
-    }
+const handleRedisSubscriptions = async () => {
 
-})();
+    try {
+        //connect the redis pub sub>
+        const subscriber = await createSubscriber();
+
+        //listen for messages in the redis channel >
+        //in the particular channel when the message comes we simpley emit to all the users in the room>
+        subscriber.on('message' , (message , channel) => {
+            const roomId = channel.split(':')[1];
+            //parsing the msg>
+            const parsedMessage = JSON.parse(message);
+
+            //forwarding the msg to all the users in the room
+            io.to(roomId).emit('room-event' , parsedMessage);
+        });
+
+        //handling redis errors>
+        subscriber.on('error' , (err) => {
+            console.error("redis subscriber error!!");
+        })
+
+    } catch(error) {
+        console.error("failed to initialise redis subscriber : " , error);
+    }
+}
+
+handleRedisSubscriptions();
 
 
 //handling client connections : >>
@@ -53,25 +63,56 @@ io.on('connection' , (socket) => {
     console.log("user connected to the ws server");
 
     //when user joins/subscribes the room
-    socket.on('subscribe' , ({roomId}) => {
-        socket.join(roomId);
-        console.log(`user subscribed/joined to room ${roomId}`);
+    socket.on('subscribe' ,  async ({roomId}) => {
+        
+        try {
+            //join the room in the ws server>
+            socket.join(roomId);
+            console.log(`user subscribed to room ${roomId}`);
+
+            //subsrbe to that redis channel and handle the redis messages in the room
+            const subscriber = await createSubscriber();
+            await subscriber.subscribe(`room:${roomId}` , (channel , message) => {
+                const parsedMessage = JSON.parse(message);
+                io.to(roomId).emit('room-event' , parsedMessage);
+            });
+  
+            //handle disconnections >
+            socket.on('disconnect' , () => {
+                console.log("user disconnected!!");
+                /* ASK DEEP SEEK ABOUT THIS 
+                subscriber.unsubscribe(`room:${roomId}`);
+                subscriber.quit();
+                */ 
+            });
+
+        } catch(error) {
+            console.error("error joing the room in the ws server!!");
+        }
+
     });
 
-    //handle chat messages >
+    //handle chat messages(when clint sends a message we publish the message to the pub sub ) >
     socket.on('send-message' , ({roomId , message , userId , userName}) => {
-        publishMessage(`room:${roomId}` , {
-            type : 'MESSAGE',
-            message,
-            userId,
-            userName,
-            timeStamp : new Date().toISOString(),
-        });
+
+        try{
+
+            publishMessage(`room:${roomId}` , {
+                type : 'MESSAGE',
+                message,
+                userId,
+                userName,
+                timeStamp : new Date().toISOString(),
+            });
+
+        } catch(err) {
+            console.error("error publishing the message to the pub sub that  the user sent" , err);
+        }
+
     });
 
-    //handle disconnections>
     socket.on('disconnect' , () => {
-        console.log("client disconnected!!");
+        console.log("user disconnected!!");
     });
 
 });
