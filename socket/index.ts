@@ -28,6 +28,8 @@ app.get('/' , (req,res) => {
 
 //subscribe to the redis client when the server starts
 
+//IF WE GET TWO MESSGES THEN REMOVE THE GLOBAL SUBSCRIBER handleRedisSubscriptions
+
 const handleRedisSubscriptions = async () => {
 
     try {
