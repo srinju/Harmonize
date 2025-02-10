@@ -10,6 +10,7 @@ import { createServer } from 'http';
 import {Server} from 'socket.io';
 import cors from 'cors';
 import { createSubscriber, publishMessage } from '@/lib/redis';
+import { PrismaClient } from '@prisma/client';
 
 const app = express();
 const httpServer = createServer(app);
@@ -25,6 +26,8 @@ app.use(cors());
 app.get('/' , (req,res) => {
     res.send("oopysy u cant do anything here!!");
 });
+
+const prisma = new PrismaClient();
 
 //subscribe to the redis client when the server starts
 
@@ -72,21 +75,18 @@ io.on('connection' , (socket) => {
             socket.join(roomId);
             console.log(`user subscribed to room ${roomId}`);
 
-            //subsrbe to that redis channel and handle the redis messages in the room
-            const subscriber = await createSubscriber();
-            await subscriber.subscribe(`room:${roomId}` , (channel , message) => {
-                const parsedMessage = JSON.parse(message);
-                io.to(roomId).emit('room-event' , parsedMessage);
-            });
-  
-            //handle disconnections >
-            socket.on('disconnect' , () => {
-                console.log("user disconnected!!");
-                /* ASK DEEP SEEK ABOUT THIS 
-                subscriber.unsubscribe(`room:${roomId}`);
-                subscriber.quit();
-                */ 
-            });
+            //get the userID and userName
+
+           
+
+            //notify other users in the room that a new user has joined>>
+            io.to(roomId).emit('room-event' , {
+                type : 'USER_JOINED',
+                user : {
+                    id : 'user id', //acyual userd id 
+                    name : 'user name' //actual user name
+                }
+            })
 
         } catch(error) {
             console.error("error joing the room in the ws server!!");

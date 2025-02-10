@@ -1,5 +1,4 @@
 
-
 //user with a code sends request 
 //validate the code with the room
 //add the user to that room
