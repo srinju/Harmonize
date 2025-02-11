@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react";
+import io from "socket.io-client";
 
 type Room = {
     id: string;
@@ -10,12 +11,28 @@ type Room = {
     created_at: string; 
 }
 
+const socket = io("http://localhost:5000"); //connect to the ws server
+
 export default  function DashboardPage() {
     
     const [name , setName] = useState("");
     const [rooms , setRooms] = useState<Room[]>([]);
     const [inRooms , setInRooms] = useState<Room[]>([]);
     const [roomCode , setRoomCode] = useState("");
+
+    //get the ws shit on mount>
+
+    useEffect(() => {
+        socket.on('USER_JOINED' , (data) => {
+          console.log("user joined : " , data);
+        });
+
+        return () => {
+          socket.off("USER_JOINED");
+          console.log("socket turned off for user joined!!");
+        }
+    },[]);
+    
 
     //get user rooms >
 
@@ -83,6 +100,9 @@ export default  function DashboardPage() {
 
           const data = await response.json();
           console.log("data got after clicking join room " , data);
+
+          //ws logic where the user sends a subscribe message to the ws server
+          socket.emit("subscribe" , {roomId : data.roomId}); //this message goes to the ws servver then the user joins the socket.joim(roomId)
 
         } catch(err){
 

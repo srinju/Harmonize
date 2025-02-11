@@ -16,6 +16,8 @@
     the user published a message to the room id channel (room)
     now we have to subscribe to that room id in the ws server and when we get the user joined message from the redis then we will make the user join the room in the ws server  we will broadcast the message from the ws server to all the users in the room
 
+    make the in room client page
+
 5. sending messages 
 
 6. song mechanism

@@ -10,7 +10,6 @@ import { createServer } from 'http';
 import {Server} from 'socket.io';
 import cors from 'cors';
 import { createSubscriber, publishMessage } from '@/lib/redis';
-import { PrismaClient } from '@prisma/client';
 
 const app = express();
 const httpServer = createServer(app);
@@ -47,7 +46,7 @@ const handleRedisSubscriptions = async () => {
             const parsedMessage = JSON.parse(message);
 
             //forwarding the msg to all the users in the room
-            io.to(roomId).emit('room-event' , parsedMessage);
+            io.to(roomId).emit('room-event' , parsedMessage); //sends the userID and the userName
         });
 
         //handling redis errors>
@@ -119,7 +118,7 @@ io.on('connection' , (socket) => {
 });
 
 
-const PORT = 5000;
+const PORT = 5001;
 
 httpServer.listen(PORT  , () => {
     console.log(`web socket server is running on port ${PORT}`);
