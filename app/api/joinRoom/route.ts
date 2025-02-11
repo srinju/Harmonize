@@ -9,13 +9,24 @@ import { authOptions } from "@/app/lib/auth";
 import { PrismaClient } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { NextResponse } from 'next/server';
-import { publishMessage } from '@/lib/redis';
+import { createClient } from 'redis';
 
 const prisma = new PrismaClient();
 
 const roomCodeSchema = z.object({
     roomCode : z.string().min(6,"code should be atleast 6 charecters long").nonempty("code is required to join the room!")
 });
+
+const client = createClient(); //create the redis client
+
+(async function connectClient() {
+
+    try {
+        await client.connect();
+    } catch(err) {
+        console.error("an error occured while connecting to redis client!!");
+    }
+})();
     
 export async function POST(req : Request){
 
@@ -69,7 +80,7 @@ export async function POST(req : Request){
         //notify the members in the room that the user joined (USING PUBLISHER)
 
         //publish to redis channel >
-        
+        /*
         await publishMessage(`room:${roomToJoin.id}` , {
             type : 'USER_JOINED',
             room : {
@@ -80,6 +91,21 @@ export async function POST(req : Request){
                 name : userName
             },
         });
+        */
+
+        //publish to redis channel>>
+
+        await client.publish(`room:${roomToJoin.id}` , JSON.stringify({
+            type : 'USER_JOINED',
+            msg : 'an user joined the room',
+            room : {
+                id : roomToJoin.id
+            },
+            user : {
+                id : userId,
+                name : userName
+            }
+        }));
 
         //a published message to the pub sub is gone from this primary backend 
         //and the websocket server will listen to any subscribed messages of types

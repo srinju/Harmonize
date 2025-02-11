@@ -9,7 +9,7 @@ import express from 'express'
 import { createServer } from 'http';
 import {Server} from 'socket.io';
 import cors from 'cors';
-import { createSubscriber, publishMessage } from '../../lib/redis';
+import { createClient } from 'redis';
 
 const app = express();
 const httpServer = createServer(app);
@@ -20,11 +20,25 @@ const io = new Server(httpServer , {
     }
 });
 
+const client = createClient();
+
 app.use(cors());
 
 app.get('/' , (req,res) => {
     res.send("oopysy u cant do anything here!!");
 });
+
+//connect to the redis client when the server starts>>
+
+(async function connectRedis() {
+
+    try{
+        await client.connect();
+    } catch(err) {
+        console.error("an error occured while connecting to the redis in the ws server!! ", err);
+    }
+    
+})();
 
 //const prisma = new PrismaClient();
 
@@ -35,6 +49,7 @@ app.get('/' , (req,res) => {
 const handleRedisSubscriptions = async () => {
 
     try {
+        /*
         //connect the redis pub sub>
         const subscriber = await createSubscriber();
 
@@ -53,6 +68,37 @@ const handleRedisSubscriptions = async () => {
         subscriber.on('error' , (err) => {
             console.error("redis subscriber error!!");
         })
+        */
+
+        //subscribe to the redis channel >
+        
+        await client.pSubscribe(`room:*` , (message,channel) => {
+            console.log("message received from the channel in the ws server : " , message);
+            //extracting the roomID>>
+            const roomId = channel.split(':')[1];
+            //parsing the message that came in the channel>>
+            const data = JSON.parse(message);
+
+            console.log("parsed message from the redis channel : " , data);
+            
+            //forward the message to the redis channel when received>>
+            if(data.type === 'USER_JOINED'){
+                io.to(roomId).emit('room-event' , {
+                    type : 'USER_JOINED',
+                    user : data.user
+                });
+            } else if(data.type === 'MESSAGE'){
+                io.to(roomId).emit('room-event' , {
+                    type : 'MESSAGE',
+                    message : data.message,
+                    user : {
+                        id : data.userId, //revalidate
+                        name : data.userName //revalidate
+                    },
+                    timeStamp : data.timeStamp
+                });
+            }
+        });
 
     } catch(error) {
         console.error("failed to initialise redis subscriber : " , error);
@@ -93,10 +139,11 @@ io.on('connection' , (socket) => {
     });
 
     //handle chat messages(when clint sends a message we publish the message to the pub sub ) >
-    socket.on('send-message' , ({roomId , message , userId , userName}) => {
+    socket.on('send-message' , async ({roomId , message , userId , userName}) => {
 
         try{
 
+            /*
             publishMessage(`room:${roomId}` , {
                 type : 'MESSAGE',
                 message,
@@ -104,6 +151,18 @@ io.on('connection' , (socket) => {
                 userName,
                 timeStamp : new Date().toISOString(),
             });
+            */
+
+            //publish the message to the redis channel >>
+
+            await client.publish(`room:${roomId}` , JSON.stringify({
+                type : 'MESSAGE',
+                message,
+                userId,
+                userName,
+                timeStamp : new Date().toISOString(),
+            }));
+
 
         } catch(err) {
             console.error("error publishing the message to the pub sub that  the user sent" , err);
