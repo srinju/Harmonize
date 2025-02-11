@@ -27,7 +27,7 @@ app.get('/' , (req,res) => {
     res.send("oopysy u cant do anything here!!");
 });
 
-const prisma = new PrismaClient();
+//const prisma = new PrismaClient();
 
 //subscribe to the redis client when the server starts
 
@@ -68,25 +68,24 @@ io.on('connection' , (socket) => {
     console.log("user connected to the ws server");
 
     //when user joins/subscribes the room
-    socket.on('subscribe' ,  async ({roomId}) => {
+    socket.on('subscribe' ,  async ({roomId , userId , userName}) => {
         
         try {
             //join the room in the ws server>
             socket.join(roomId);
             console.log(`user subscribed to room ${roomId}`);
 
-            //get the userID and userName
-
-           
-
             //notify other users in the room that a new user has joined>>
+            //THIS PART IS HANDLED BY THE GLOBAL SUBSCRIBER AS ANY KIND OF MESSAGE IN THE CHANNEL IS TRANSMITTED TO THE END USERS
+            /*
             io.to(roomId).emit('room-event' , {
                 type : 'USER_JOINED',
                 user : {
-                    id : 'user id', //acyual userd id 
-                    name : 'user name' //actual user name
+                    id : userId,
+                    name : userName
                 }
-            })
+            });
+            */
 
         } catch(error) {
             console.error("error joing the room in the ws server!!");

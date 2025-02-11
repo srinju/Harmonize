@@ -62,7 +62,7 @@ export async function POST(req : Request){
             data : {
                 userId : userId,
                 roomId : roomToJoin.id
-            }
+            }   
         });
 
         //user has been added to the room
@@ -72,6 +72,9 @@ export async function POST(req : Request){
         
         await publishMessage(`room:${roomToJoin.id}` , {
             type : 'USER_JOINED',
+            room : {
+                id : roomToJoin.id
+            },
             user : {
                 id : userId,
                 name : userName
