@@ -18,6 +18,9 @@
 
     make the in room client page
 
+    shifted the ws server to another express app 
+    make normal redis implementation
+
 5. sending messages 
 
 6. song mechanism

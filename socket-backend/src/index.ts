@@ -9,7 +9,7 @@ import express from 'express'
 import { createServer } from 'http';
 import {Server} from 'socket.io';
 import cors from 'cors';
-import { createSubscriber, publishMessage } from '@/lib/redis';
+import { createSubscriber, publishMessage } from '../../lib/redis';
 
 const app = express();
 const httpServer = createServer(app);
