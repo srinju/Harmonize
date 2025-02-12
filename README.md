@@ -21,6 +21,14 @@
     shifted the ws server to another express app 
     make normal redis implementation
 
+    user is able to get into the rooms thru the ws server
+
+    NEXT>>>>>>>>>>>>>>>>>>>>>>>>>>..
+
+    make the inroom client code where the users can see their messages ---> and songs and shit
+
+    FIGURE OUT THE MESSAGING PART SHIT IS NOT WORKING
+
 5. sending messages 
 
 6. song mechanism

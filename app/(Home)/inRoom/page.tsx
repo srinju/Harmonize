@@ -13,7 +13,8 @@ export default function inRoomPage() {
     const[messages , setMessages] = useState([]);
     const[chatInput , setChatInput] = useState("");
 
-    useEffect(() => {
+    const handleSubmitMessage = async () => {
+
         socket.on('message' , (data) => {
 
             console.log("message from the ws server : ", data); 
@@ -21,7 +22,7 @@ export default function inRoomPage() {
 
             setMessages(data); //set the message as the data that came.
         })
-    },[]);
+    }
 
     return (
         <div>
@@ -40,7 +41,14 @@ export default function inRoomPage() {
             <div>
                 type message : 
                 <div>
-                    <input type="text"  placeholder="hello" onChange={(e) => setChatInput(e.target.value)}></input>
+                    <input type="text"  placeholder="ur messag here" onChange={(e) => setChatInput(e.target.value)}></input>
+                </div>
+                <div>
+                    <button 
+                        onClick={handleSubmitMessage}
+                        className="border-white">
+                    send
+                    </button>
                 </div>
             </div>
         </div>
