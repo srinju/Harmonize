@@ -11,7 +11,7 @@ type Room = {
     created_at: string; 
 }
 
-const socket = io("http://localhost:5000"); //connect to the ws server
+const socket = io("http://localhost:5001"); //connect to the ws server
 
 export default  function DashboardPage() {
     
@@ -43,8 +43,8 @@ export default  function DashboardPage() {
                 throw new Error("get user rooms request was not ok!");
             }
             const data = await response.json();
-            console.log("created rooms by the user : " ,data.createdRooms.createdRooms);
-            console.log("rooms the user is in : ", data.userRooms);
+            //console.log("created rooms by the user : " ,data.createdRooms.createdRooms);
+            //console.log("rooms the user is in : ", data.userRooms);
 
             setRooms(data.createdRooms.createdRooms || []);
             const userRooms = data.userRooms.map((ur:any) => ur.room);
@@ -71,7 +71,7 @@ export default  function DashboardPage() {
             const refreshData = await refreshResponse.json();
             setRooms(refreshData.createdRooms.createdRooms || []);
             setInRooms(refreshData.userRooms.map((ur:any) => ur.room));
-            console.log("the response from the room api is  : " , data);
+            //console.log("the response from the room api is  : " , data);
 
             setName(""); //clear the input too
             
@@ -100,9 +100,9 @@ export default  function DashboardPage() {
 
           const data = await response.json();
           console.log("data got after clicking join room " , data);
-
+          console.log("room id : " , data.addedUser.roomId);
           //ws logic where the user sends a subscribe message to the ws server
-          socket.emit("subscribe" , {roomId : data.roomId}); //this message goes to the ws servver then the user joins the socket.joim(roomId)
+          socket.emit("subscribe" , {roomId : data.addedUser.roomId}); //this message goes to the ws servver then the user joins the socket.joim(roomId)
 
         } catch(err){
 
@@ -110,8 +110,8 @@ export default  function DashboardPage() {
         }
     }
 
-    console.log("rooms created by the user state : " , rooms);
-    console.log("in rooms state : " , inRooms);
+    //console.log("rooms created by the user state : " , rooms);
+    //console.log("in rooms state : " , inRooms);
 
     return (
       <div className="p-6 bg-black text-white rounded-lg shadow-md max-h-screen">
